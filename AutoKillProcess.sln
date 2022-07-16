@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32526.322
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoKiller", "AutoKiller\AutoKiller.csproj", "{79E3BCE7-58DA-4A29-8E40-F756FFBBDB36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoKillInstaller", "AutoKillInstaller\AutoKillInstaller.csproj", "{A73E19F8-FBEF-4AB1-BEF2-950733C5A89A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{79E3BCE7-58DA-4A29-8E40-F756FFBBDB36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79E3BCE7-58DA-4A29-8E40-F756FFBBDB36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79E3BCE7-58DA-4A29-8E40-F756FFBBDB36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79E3BCE7-58DA-4A29-8E40-F756FFBBDB36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A73E19F8-FBEF-4AB1-BEF2-950733C5A89A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A73E19F8-FBEF-4AB1-BEF2-950733C5A89A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A73E19F8-FBEF-4AB1-BEF2-950733C5A89A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A73E19F8-FBEF-4AB1-BEF2-950733C5A89A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {420BA65C-C6C6-4E37-AC85-787917135AD0}
+	EndGlobalSection
+EndGlobal

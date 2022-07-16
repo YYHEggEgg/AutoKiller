@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "AutoKiller": {
+      "commandName": "Project",
+      "remoteDebugEnabled": true,
+      "remoteDebugMachine": "WIN-2KPO77A6RH4:4026"
+    }
+  }
+}
