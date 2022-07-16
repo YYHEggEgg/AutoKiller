@@ -28,11 +28,11 @@ else
 }
 Directory.CreateDirectory(@"D:\AutoKiller");
 string thisPath = AppDomain.CurrentDomain.BaseDirectory;
-File.Copy($@"{thisPath}\AutoKiller.exe", @"D:\AutoKiller\AutoKiller.exe");
-File.Copy($@"{thisPath}\AutoKiller.dll", @"D:\AutoKiller\AutoKiller.dll");
-File.Copy($@"{thisPath}\AutoKiller.pdb", @"D:\AutoKiller\AutoKiller.pdb");
-File.Copy($@"{thisPath}\AutoKiller.deps.json", @"D:\AutoKiller\AutoKiller.deps.json");
-File.Copy($@"{thisPath}\AutoKiller.runtimeconfig.json", @"D:\AutoKiller\AutoKiller.runtimeconfig.json");
+File.Copy($@"{thisPath}\AutoKiller.exe", @"D:\AutoKiller\AutoKiller.exe", true);
+File.Copy($@"{thisPath}\AutoKiller.dll", @"D:\AutoKiller\AutoKiller.dll", true);
+File.Copy($@"{thisPath}\AutoKiller.pdb", @"D:\AutoKiller\AutoKiller.pdb", true);
+File.Copy($@"{thisPath}\AutoKiller.deps.json", @"D:\AutoKiller\AutoKiller.deps.json", true);
+File.Copy($@"{thisPath}\AutoKiller.runtimeconfig.json", @"D:\AutoKiller\AutoKiller.runtimeconfig.json", true);
 
 Console.WriteLine("Enjoy the AutoKiller with Kaedehara Kazuha!");
 Console.ReadLine();

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using _Timer = System.Threading.Timer;
@@ -14,11 +15,10 @@ namespace AutoKiller
             CheckForIllegalCrossThreadCalls = false;
         }
 
-        public static bool HideWindow = false;
         Status s = new();
         _Timer timer;
-        List<int> progress = new();
-        List<int> priority = new();
+        readonly List<int> progress = new();
+        readonly List<int> priority = new();
 
         private void Form_Welcome_Load(object sender, EventArgs e)
         {
@@ -35,19 +35,21 @@ namespace AutoKiller
             listView_rules.View = View.Details;
             //listView_rules.Columns.Add("名称", 120, HorizontalAlignment.Left);
             //listView_rules.Columns.Add("规则", 120, HorizontalAlignment.Left);
+            Print("AutoKiller（万叶限定版）启动中");
 
             #region Deserialize
             string dic = AppDomain.CurrentDomain.BaseDirectory;
             string staPath = $@"{dic}\status.json";
             if (File.Exists(staPath))
             {
+                Print("正在读取配置...");
                 string jsonString = File.ReadAllText(staPath);
                 Status? tmp = JsonSerializer.Deserialize<Status>(jsonString);
                 if (tmp != null)
                 {
                     s = tmp;
                     CreateUI();
-
+                    Print("读取成功！");
                     #region Init
                     for (int i = 0; i < s.cnt; i++)
                     {
@@ -71,6 +73,46 @@ namespace AutoKiller
             StartService();
         }
 
+        #region HideWindow Control
+        public static bool HideWindow = false;
+        private void notifyIcon_show_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            Show();
+            WindowHidden = false;
+            UpdateUI();
+            FlushBuffer();
+        }
+
+        private void button_hide_Click(object sender, EventArgs e)
+        {
+            Hide();
+            WindowHidden = true;
+        }
+        #endregion
+
+        #region Console (RichTextBox)
+        StringBuilder buffer = new();
+        private void Print(string str)
+        {
+            str = $"{DateTime.Now} {str}{Environment.NewLine}";
+            if (WindowHidden) SaveToBuffer(str);
+            else richTextBox_output.AppendText(str);
+        }
+
+        private void SaveToBuffer(string str)
+        {
+            buffer.Append(str);
+            if (buffer.Length > 10000) FlushBuffer();
+        }
+
+        private void FlushBuffer()
+        {
+            richTextBox_output.AppendText($"{DateTime.Now} 恢复了控制台");
+            richTextBox_output.AppendText(buffer.ToString());
+            buffer = new();
+        }
+        #endregion
+
         #region Create New Rule
         private void button_new_Click(object sender, EventArgs e)
         {
@@ -85,13 +127,16 @@ namespace AutoKiller
 
             #region Update Rules
             BeginUpdateRules();
+            Print("AutoKiller 服务已暂停");
             s.rules.Add(new Status.Rule { id = s.cnt, content = content, description = description });
             s.forbidcnts.Add(new());
             //s.forbidcnts[s.cnt].Add(Today, 0);
             s.forbidcnts[s.cnt][_today] = 0;
             progress.Add(0);
             priority.Add(3);
+            Print($"成功创建新规则：{content} ({description})");
             EndUpdateRules();
+            Print("AutoKiller 服务已恢复");
             #endregion
 
             #region Update Listview
@@ -127,6 +172,7 @@ namespace AutoKiller
                 priority.Add(3);
             }
             timer = new(obj => StopProcess(), null, 0, 3000);
+            Print("AutoKiller 服务已启动");
         }
 
         #region Manage Thread Security
@@ -189,7 +235,12 @@ namespace AutoKiller
                     if (priority[i] > 3) priority[i] -= 3;
                     for (; j < prolist.Count; j++)
                     {
-                        if (pronames[j] == nam) prolist[it].Kill();
+                        if (pronames[j] == nam)
+                        {
+                            var pr = prolist[it];
+                            pr.Kill();
+                            Print($"停止了进程 {pr.ProcessName} [{pr.Id}]");
+                        }
                         else break;
                     }
                     if (!s.forbidcnts[i].ContainsKey(_today)) s.forbidcnts[i][_today] = 0;
@@ -263,22 +314,65 @@ namespace AutoKiller
             string jsonString = JsonSerializer.Serialize(s, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(staPath, jsonString);
         }
-
-        private void notifyIcon_show_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            Show();
-            WindowHidden = false;
-            UpdateUI();
-        }
-
-        private void button_hide_Click(object sender, EventArgs e)
-        {
-            Hide();
-            WindowHidden = true;
-        }
     }
 
-    [Serializable]
+    public class Status : IJsonOnSerializing, IJsonOnDeserialized
+    {
+        public Status()
+        {
+            forbidcnts = new();
+            sumforbidcnt = new();
+            sumallcnt = 0;
+            rules = new();
+            cnt = 0;
+            list_forbidcnts = new();
+            list_sumforbidcnt = new();
+        }
+
+        [JsonIgnore] public List<Dictionary<Date, int>> forbidcnts { get; set; }
+        [JsonIgnore] public Dictionary<Date, int> sumforbidcnt { get; set; }
+        public int sumallcnt { get; set; }
+
+        public List<Rule> rules { get; set; }
+        public int cnt { get; set; }
+
+        [Serializable]
+        public class Rule
+        {
+            public int id { get; set; }
+            public string content { get; set; }
+            public string description { get; set; }
+        }
+
+        #region List Serialize
+        public List<List<KeyValuePair<Date, int>>> list_forbidcnts { get; set; }
+        public List<KeyValuePair<Date, int>> list_sumforbidcnt { get; set; }
+
+        public void OnSerializing()
+        {
+            foreach (var list in forbidcnts)
+            {
+                list_forbidcnts.Add(list.ToList());
+            }
+
+            list_sumforbidcnt = sumforbidcnt.ToList();
+        }
+
+        public void OnDeserialized()
+        {
+            foreach (var list in list_forbidcnts)
+            {
+                forbidcnts.Add(new(list));
+            }
+
+            sumforbidcnt = new(list_sumforbidcnt);
+
+            list_forbidcnts.Clear();
+            list_sumforbidcnt.Clear();
+        }
+        #endregion
+    }
+
     public class Date
     {
         public int year { get; set; }
@@ -316,7 +410,7 @@ namespace AutoKiller
         public override bool Equals(object? obj)
         {
             if (obj == null) return false;
-            if (!(obj is Date)) return false;
+            if (obj is not Date) return false;
             return year == ((Date)obj).year && month == ((Date)obj).month && day == ((Date)obj).day;  
         }
 
@@ -324,104 +418,5 @@ namespace AutoKiller
         {
             return GetHashCode().ToString();
         }
-    }
-
-    [Serializable]
-    public class Status : IJsonOnSerializing, IJsonOnDeserialized
-    {
-        public Status()
-        {
-            forbidcnts = new();
-            sumforbidcnt = new();
-            sumallcnt = 0;
-            rules = new();
-            cnt = 0;
-            list_forbidcnts = new();
-            list_sumforbidcnt = new();
-        }
-
-        [JsonIgnore] public List<Dictionary<Date, int>> forbidcnts { get; set; }
-        [JsonIgnore] public Dictionary<Date, int> sumforbidcnt { get; set; }
-        public int sumallcnt { get; set; }
-
-        public List<Rule> rules { get; set; }
-        public int cnt { get; set; }
-
-        [Serializable]
-        public class Rule
-        {
-            public int id { get; set; }
-            public string content { get; set; }
-            public string description { get; set; }
-        }
-
-        #region List Serialize
-        /*
-        public List<Dictionary<int, int>> hashkey_forbidcnts = new();
-        public Dictionary<int, int> hashkey_sumforbidcnt = new();
-        [OnSerializing]
-        public void OnSerializing(StreamingContext context)
-        {
-            foreach (var list in forbidcnts)
-            {
-                Dictionary<int, int> item = new();
-                foreach (var pair in list)
-                {
-                    item.Add(pair.Key.GetHashCode(), pair.Value);
-                }
-                hashkey_forbidcnts.Add(item);
-            }
-
-            foreach (var pair in sumforbidcnt)
-            {
-                hashkey_sumforbidcnt.Add(pair.Key.GetHashCode(), pair.Value);
-            }
-        }
-
-        [OnDeserialized]
-        public void OnDeserialized(StreamingContext context)
-        {
-            foreach (var list in hashkey_forbidcnts)
-            {
-                Dictionary<Date, int> item = new();
-                foreach (var pair in list)
-                {
-                    item.Add(new(pair.Key), pair.Value);
-                }
-                forbidcnts.Add(item);
-            }
-
-            foreach (var pair in hashkey_sumforbidcnt)
-            {
-                sumforbidcnt.Add(new(pair.Key), pair.Value);
-            }
-        }*/
-
-        public List<List<KeyValuePair<Date, int>>> list_forbidcnts { get; set; }
-        public List<KeyValuePair<Date, int>> list_sumforbidcnt { get; set; }
-
-        public void OnSerializing()
-        {
-            foreach (var list in forbidcnts)
-            {
-                list_forbidcnts.Add(list.ToList());
-            }
-
-            list_sumforbidcnt = sumforbidcnt.ToList();
-        }
-
-        public void OnDeserialized()
-        {
-            foreach (var list in list_forbidcnts)
-            {
-                forbidcnts.Add(new(list));
-            }
-
-            sumforbidcnt = new(list_sumforbidcnt);
-
-            list_forbidcnts.Clear();
-            list_sumforbidcnt.Clear();
-        }
-        #endregion
     }
 }
