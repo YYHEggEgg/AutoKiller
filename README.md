@@ -1,4 +1,4 @@
-# AutoKiller (Kaedehara Kazuha version) v1.0.1
+# AutoKiller (Kaedehara Kazuha version) v1.1.0
 Automatically kills certain programs from auto-start.          
 
 You can set some program to the automatic kill list, and the program will kill these program automatically.        
@@ -18,3 +18,11 @@ Released AutoKiller.
 ## v1.0.1        
  - Added Console support           
  - Installer will overwrite the original file now
+
+## v1.1.0
+ - Optimized the console output when recovering
+ - Supported deletion of rules
+ - Optimized writing action to regedit
+ - Optimized the UI when creating a new rule
+ - Added a notice window for waiting the service stopping
+ - Optimized some nullable variables and related codes
