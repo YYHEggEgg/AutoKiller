@@ -26,3 +26,6 @@ Released AutoKiller.
  - Optimized the UI when creating a new rule
  - Added a notice window for waiting the service stopping
  - Optimized some nullable variables and related codes
+
+## v1.1.1
+ - Fixed the regedit problem (the installer won't write the command-line argg)
