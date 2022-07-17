@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Newrule));
             this.label1 = new System.Windows.Forms.Label();
             this.textbox_description = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -99,8 +100,9 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.textbox_description);
             this.Controls.Add(this.label1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form_Newrule";
-            this.Text = "Form_Newrule";
+            this.Text = "创建新拦截规则";
             this.Load += new System.EventHandler(this.Form_Newrule_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

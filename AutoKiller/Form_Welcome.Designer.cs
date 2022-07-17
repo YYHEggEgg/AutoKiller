@@ -40,6 +40,7 @@
             this.richTextBox_output = new System.Windows.Forms.RichTextBox();
             this.button_hide = new System.Windows.Forms.Button();
             this.notifyIcon_show = new System.Windows.Forms.NotifyIcon(this.components);
+            this.button_deleterule = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -133,11 +134,22 @@
             this.notifyIcon_show.Visible = true;
             this.notifyIcon_show.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_show_MouseDoubleClick);
             // 
+            // button_deleterule
+            // 
+            this.button_deleterule.Location = new System.Drawing.Point(174, 12);
+            this.button_deleterule.Name = "button_deleterule";
+            this.button_deleterule.Size = new System.Drawing.Size(92, 23);
+            this.button_deleterule.TabIndex = 5;
+            this.button_deleterule.Text = "删除所选规则";
+            this.button_deleterule.UseVisualStyleBackColor = true;
+            this.button_deleterule.Click += new System.EventHandler(this.button_deleterule_Click);
+            // 
             // Form_Welcome
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1071, 450);
+            this.Controls.Add(this.button_deleterule);
             this.Controls.Add(this.button_hide);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label_tips);
@@ -165,5 +177,6 @@
         private ColumnHeader columnHeader_Count;
         private Button button_hide;
         private NotifyIcon notifyIcon_show;
+        private Button button_deleterule;
     }
 }

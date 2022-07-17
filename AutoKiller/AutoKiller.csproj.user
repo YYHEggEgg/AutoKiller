@@ -4,6 +4,9 @@
     <Compile Update="Form_Newrule.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Form_Notice.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Form_Welcome.cs">
       <SubType>Form</SubType>
     </Compile>

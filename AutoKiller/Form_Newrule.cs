@@ -27,11 +27,11 @@ namespace AutoKiller
             Close();
         }
 
-        public static event Action<string, string> NewruleCompleted;
+        public static event Action<string, string>? NewruleCompleted;
 
         private void button_complete_Click(object sender, EventArgs e)
         {
-            NewruleCompleted(textBox_content.Text, textbox_description.Text);
+            NewruleCompleted?.Invoke(textBox_content.Text, textbox_description.Text);
             Close();
         }
     }

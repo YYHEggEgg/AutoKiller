@@ -3,7 +3,7 @@ using Microsoft.Win32;
 using System.Diagnostics;
 #pragma warning disable CA1416 // 验证平台兼容性
 
-Console.WriteLine("AutoKiller (Kaedehara Kazuha version) v1.0.0 Installer");
+Console.WriteLine("AutoKiller (Kaedehara Kazuha version) v1.1.0 Installer");
 Console.WriteLine(@"AutoKiller will be installed in D:\AutoKiller\");
 if (Process.GetProcessesByName("AutoKiller").Length != 0)
 {
@@ -19,7 +19,7 @@ else
 {
     Console.WriteLine("New Install Mode");
     Console.WriteLine("Registry Writing: .\\AutoKiller -startup");
-    string path = @"D:\AutoKiller\AutoKiller.exe";
+    string path = @"""D:\AutoKiller\AutoKiller.exe""";
     RegistryKey rk = Registry.LocalMachine;
     RegistryKey rk2 = rk.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
     rk2.SetValue("AutoKiller (Kaedehara Kazuha version)", path);

@@ -5,6 +5,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using _Timer = System.Threading.Timer;
 
+#pragma warning disable IDE1006 // 命名样式
+
 namespace AutoKiller
 {
     public partial class Form_Welcome : Form
@@ -16,7 +18,7 @@ namespace AutoKiller
         }
 
         Status s = new();
-        _Timer timer;
+        _Timer timer = new(obj => { }, null, Timeout.Infinite, Timeout.Infinite);
         readonly List<int> progress = new();
         readonly List<int> priority = new();
 
@@ -73,6 +75,7 @@ namespace AutoKiller
             StartService();
         }
 
+        //Control NotifyIcon
         #region HideWindow Control
         public static bool HideWindow = false;
         private void notifyIcon_show_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -90,6 +93,7 @@ namespace AutoKiller
         }
         #endregion
 
+        //RichTextBox Console
         #region Console (RichTextBox)
         StringBuilder buffer = new();
         private void Print(string str)
@@ -107,12 +111,13 @@ namespace AutoKiller
 
         private void FlushBuffer()
         {
-            richTextBox_output.AppendText($"{DateTime.Now} 恢复了控制台");
+            richTextBox_output.AppendText($"[ {DateTime.Now} 恢复了控制台 ]{Environment.NewLine}");
             richTextBox_output.AppendText(buffer.ToString());
             buffer = new();
         }
         #endregion
 
+        //Rules Management
         #region Create New Rule
         private void button_new_Click(object sender, EventArgs e)
         {
@@ -127,8 +132,7 @@ namespace AutoKiller
 
             #region Update Rules
             BeginUpdateRules();
-            Print("AutoKiller 服务已暂停");
-            s.rules.Add(new Status.Rule { id = s.cnt, content = content, description = description });
+            s.rules.Add(new Status.Rule { content = content, description = description });
             s.forbidcnts.Add(new());
             //s.forbidcnts[s.cnt].Add(Today, 0);
             s.forbidcnts[s.cnt][_today] = 0;
@@ -136,7 +140,6 @@ namespace AutoKiller
             priority.Add(3);
             Print($"成功创建新规则：{content} ({description})");
             EndUpdateRules();
-            Print("AutoKiller 服务已恢复");
             #endregion
 
             #region Update Listview
@@ -164,6 +167,58 @@ namespace AutoKiller
         }
         #endregion
 
+        #region Delete Selected rule
+        private void DeleteSelectedRules()
+        {
+            tok.Dispose();
+            List<int> selected = new();
+            for (int i = 0; i < listView_rules.SelectedItems.Count; i++)
+            {
+                int index = listView_rules.SelectedItems[i].Index;
+                selected.Add(index);
+            }
+            selected.Sort((l, r) => - l.CompareTo(r));
+            listView_rules.BeginUpdate();
+            foreach (var index in selected)
+            {
+                Print($"删除了第 {index} 个规则：{s.rules[index].content} ({s.rules[index].description})");
+                listView_rules.Items.RemoveAt(index);
+                s.forbidcnts.RemoveAt(index);
+                s.rules.RemoveAt(index);
+                s.cnt--;
+            }
+            listView_rules.EndUpdate();
+            Print($"删除操作已成功，共删除了 {selected.Count} 条规则。");
+            EndUpdateRules();
+        }
+
+        public static event Action? LongTimeActionCompleted;
+        public _Timer tok = new(obj => { }, null, Timeout.Infinite, Timeout.Infinite);
+        private void button_deleterule_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("如果要进行删除规则的操作，必须暂停服务才能继续。按“确定”以表明你同意暂停服务并等待最后一次扫描结束。",
+                "警告", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
+            {
+                Print("用户请求删除规则。");
+                new Form_Notice().Show();
+                BeginUpdateRules();
+                Form_Notice.CancelAndClose += () => Close();
+                Print("等待服务停止...");
+                tok = new(obj =>
+                {
+                    if (!running)
+                    {
+                        Print("服务已停止");
+                        tok.Change(Timeout.Infinite, Timeout.Infinite);
+                        LongTimeActionCompleted?.Invoke();
+                        DeleteSelectedRules();
+                    }
+                }, null, 500, 1000);
+            }
+        }
+        #endregion
+
+        //Service
         #region Service
         private void StartService()
         {
@@ -177,21 +232,24 @@ namespace AutoKiller
 
         #region Manage Thread Security
         private bool beginupdate = false;
-        //private bool running = false;
+        private bool running = false;
         private void BeginUpdateRules()
         {
             beginupdate = true;
+            Print("AutoKiller 服务已暂停");
         }
 
         private void EndUpdateRules()
         {
             beginupdate = false;
+            Print("AutoKiller 服务已恢复");
         }
         #endregion
 
         private void StopProcess()
         {
             if (beginupdate) return;
+            running = true;
 
             #region Priority Examination
             int _rulecnt = s.rules.Count;
@@ -208,7 +266,11 @@ namespace AutoKiller
                     progress[i] = 0;
                 }
             }
-            if (examinequeue.Count == 0) return;
+            if (examinequeue.Count == 0)
+            {
+                running = false;
+                return;
+            }
             #endregion
 
             #region Process Sort (nlogn)
@@ -253,6 +315,7 @@ namespace AutoKiller
             #endregion
 
             UpdateUI();
+            running = false;
         }
 
         private static int BinarySearch(List<string> list, string value, int l = 1, int r = -1)
@@ -306,6 +369,7 @@ namespace AutoKiller
         }
         #endregion
 
+        //Serialize before closing
         private void Form_Welcome_FormClosing(object sender, FormClosingEventArgs e)
         {
             timer.Dispose();
@@ -320,13 +384,13 @@ namespace AutoKiller
     {
         public Status()
         {
+            list_forbidcnts = new();
+            list_sumforbidcnt = new();
             forbidcnts = new();
             sumforbidcnt = new();
             sumallcnt = 0;
             rules = new();
             cnt = 0;
-            list_forbidcnts = new();
-            list_sumforbidcnt = new();
         }
 
         [JsonIgnore] public List<Dictionary<Date, int>> forbidcnts { get; set; }
@@ -339,7 +403,6 @@ namespace AutoKiller
         [Serializable]
         public class Rule
         {
-            public int id { get; set; }
             public string content { get; set; }
             public string description { get; set; }
         }
@@ -350,6 +413,9 @@ namespace AutoKiller
 
         public void OnSerializing()
         {
+            list_forbidcnts = new();
+            list_sumforbidcnt = new();
+
             foreach (var list in forbidcnts)
             {
                 list_forbidcnts.Add(list.ToList());
